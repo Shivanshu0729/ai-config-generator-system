@@ -1,6 +1,14 @@
 from fastapi import FastAPI
+from typing import Dict, Any
 
-def build_runtime_app(config: dict) -> FastAPI:
+
+def create_handler(name: str):
+    async def handler():
+        return {"message": f"{name} endpoint works"}
+    return handler
+
+
+def build_runtime_app(config: Dict[str, Any]) -> FastAPI:
     app = FastAPI(title=config.get("app_name", "Generated App"))
 
     endpoints = config.get("api_schema", {}).get("endpoints", [])
@@ -10,8 +18,7 @@ def build_runtime_app(config: dict) -> FastAPI:
         method = ep.get("method", "GET").lower()
         name = ep.get("name", "endpoint")
 
-        async def handler(name=name):
-            return {"message": f"{name} endpoint works"}
+        handler = create_handler(name)
 
         if method == "get":
             app.get(path)(handler)
@@ -21,5 +28,7 @@ def build_runtime_app(config: dict) -> FastAPI:
             app.put(path)(handler)
         elif method == "delete":
             app.delete(path)(handler)
+        else:
+            app.get(path)(handler)
 
     return app
