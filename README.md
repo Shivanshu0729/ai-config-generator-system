@@ -4,8 +4,6 @@ A production-grade system that converts natural language into complete, validate
 
 This project is designed as an engineering system rather than a prompt-based script, focusing on reliability, control, and execution readiness.
 
-**Repository:** https://github.com/Shivanshu0729/ai-config-generator-system
-
 ---
 
 ## Highlights
