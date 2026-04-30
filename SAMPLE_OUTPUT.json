@@ -1,0 +1,304 @@
+{
+  "success": true,
+  "config": {
+    "app_name": "CRM System",
+    "app_description": "A customer relationship management platform with user authentication, contact management, and role-based dashboard analytics",
+    
+    "entities": {
+      "User": {
+        "fields": {
+          "id": {"type": "string", "required": true, "unique": true},
+          "email": {"type": "email", "required": true, "unique": true},
+          "name": {"type": "string", "required": true},
+          "role": {"type": "string", "required": true},
+          "password_hash": {"type": "string", "required": true},
+          "created_at": {"type": "datetime", "required": true},
+          "updated_at": {"type": "datetime", "required": true}
+        }
+      },
+      "Contact": {
+        "fields": {
+          "id": {"type": "string", "required": true, "unique": true},
+          "user_id": {"type": "string", "required": true, "indexed": true},
+          "name": {"type": "string", "required": true},
+          "email": {"type": "email", "required": false},
+          "phone": {"type": "phone", "required": false},
+          "company": {"type": "string", "required": false},
+          "notes": {"type": "string", "required": false},
+          "created_at": {"type": "datetime", "required": true},
+          "updated_at": {"type": "datetime", "required": true}
+        }
+      },
+      "Task": {
+        "fields": {
+          "id": {"type": "string", "required": true, "unique": true},
+          "contact_id": {"type": "string", "required": true, "indexed": true},
+          "user_id": {"type": "string", "required": true, "indexed": true},
+          "title": {"type": "string", "required": true},
+          "description": {"type": "string", "required": false},
+          "status": {"type": "string", "required": true},
+          "due_date": {"type": "date", "required": false},
+          "created_at": {"type": "datetime", "required": true},
+          "updated_at": {"type": "datetime", "required": true}
+        }
+      },
+      "Analytics": {
+        "fields": {
+          "id": {"type": "string", "required": true, "unique": true},
+          "user_id": {"type": "string", "required": true, "indexed": true},
+          "total_contacts": {"type": "integer", "required": false},
+          "total_tasks": {"type": "integer", "required": false},
+          "completed_tasks": {"type": "integer", "required": false},
+          "generated_at": {"type": "datetime", "required": true}
+        }
+      }
+    },
+    
+    "db_schema": {
+      "entities": {
+        "users": {
+          "fields": {
+            "id": {"type": "string"},
+            "email": {"type": "email"},
+            "name": {"type": "string"},
+            "role": {"type": "string"},
+            "password_hash": {"type": "string"},
+            "created_at": {"type": "datetime"},
+            "updated_at": {"type": "datetime"}
+          }
+        },
+        "contacts": {
+          "fields": {
+            "id": {"type": "string"},
+            "user_id": {"type": "string"},
+            "name": {"type": "string"},
+            "email": {"type": "email"},
+            "phone": {"type": "phone"},
+            "company": {"type": "string"},
+            "notes": {"type": "string"},
+            "created_at": {"type": "datetime"},
+            "updated_at": {"type": "datetime"}
+          }
+        },
+        "tasks": {
+          "fields": {
+            "id": {"type": "string"},
+            "contact_id": {"type": "string"},
+            "user_id": {"type": "string"},
+            "title": {"type": "string"},
+            "description": {"type": "string"},
+            "status": {"type": "string"},
+            "due_date": {"type": "date"},
+            "created_at": {"type": "datetime"},
+            "updated_at": {"type": "datetime"}
+          }
+        },
+        "analytics": {
+          "fields": {
+            "id": {"type": "string"},
+            "user_id": {"type": "string"},
+            "total_contacts": {"type": "integer"},
+            "total_tasks": {"type": "integer"},
+            "completed_tasks": {"type": "integer"},
+            "generated_at": {"type": "datetime"}
+          }
+        }
+      },
+      "relations": [
+        {"from_entity": "contacts", "to_entity": "users", "relation_type": "many_to_one", "foreign_key": "user_id"},
+        {"from_entity": "tasks", "to_entity": "contacts", "relation_type": "many_to_one", "foreign_key": "contact_id"},
+        {"from_entity": "tasks", "to_entity": "users", "relation_type": "many_to_one", "foreign_key": "user_id"},
+        {"from_entity": "analytics", "to_entity": "users", "relation_type": "one_to_one", "foreign_key": "user_id"}
+      ]
+    },
+    
+    "ui_schema": {
+      "pages": {
+        "login": {
+          "name": "login",
+          "route": "/login",
+          "title": "Login",
+          "description": "User authentication page",
+          "components": [
+            {"id": "email-input", "type": "input", "label": "Email", "props": {"type": "email"}},
+            {"id": "password-input", "type": "input", "label": "Password", "props": {"type": "password"}},
+            {"id": "login-button", "type": "button", "label": "Login"}
+          ],
+          "auth_required": false,
+          "allowed_roles": []
+        },
+        "dashboard": {
+          "name": "dashboard",
+          "route": "/dashboard",
+          "title": "Dashboard",
+          "description": "Main dashboard with analytics",
+          "components": [
+            {"id": "welcome-card", "type": "card", "label": "Welcome"},
+            {"id": "stats-card", "type": "card", "label": "Statistics"},
+            {"id": "recent-contacts", "type": "table", "label": "Recent Contacts"},
+            {"id": "analytics-chart", "type": "chart", "label": "Performance Analytics"}
+          ],
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"]
+        },
+        "contacts": {
+          "name": "contacts",
+          "route": "/contacts",
+          "title": "Contacts",
+          "description": "Manage your contacts",
+          "components": [
+            {"id": "contacts-table", "type": "table", "label": "Contacts List"},
+            {"id": "add-contact-button", "type": "button", "label": "Add Contact"},
+            {"id": "search-input", "type": "input", "label": "Search"}
+          ],
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"]
+        },
+        "admin-panel": {
+          "name": "admin-panel",
+          "route": "/admin",
+          "title": "Admin Panel",
+          "description": "Administrative controls and analytics",
+          "components": [
+            {"id": "users-table", "type": "table", "label": "Users"},
+            {"id": "system-analytics", "type": "chart", "label": "System Analytics"},
+            {"id": "user-management", "type": "form", "label": "User Management"}
+          ],
+          "auth_required": true,
+          "allowed_roles": ["admin"]
+        }
+      }
+    },
+    
+    "api_schema": {
+      "endpoints": [
+        {
+          "path": "/api/v1/auth/login",
+          "method": "POST",
+          "name": "login",
+          "description": "User login with email and password",
+          "auth_required": false,
+          "allowed_roles": [],
+          "entity": "User",
+          "request_body": {"email": {"type": "email"}, "password": {"type": "string"}},
+          "response_body": {"token": {"type": "string"}, "user": {"type": "json"}}
+        },
+        {
+          "path": "/api/v1/auth/logout",
+          "method": "POST",
+          "name": "logout",
+          "description": "User logout",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "User"
+        },
+        {
+          "path": "/api/v1/contacts",
+          "method": "GET",
+          "name": "list_contacts",
+          "description": "List all contacts for current user",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Contact",
+          "response_body": {"contacts": {"type": "json"}, "total": {"type": "integer"}}
+        },
+        {
+          "path": "/api/v1/contacts",
+          "method": "POST",
+          "name": "create_contact",
+          "description": "Create new contact",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Contact",
+          "request_body": {"name": {"type": "string"}, "email": {"type": "email"}, "phone": {"type": "phone"}},
+          "response_body": {"id": {"type": "string"}, "name": {"type": "string"}}
+        },
+        {
+          "path": "/api/v1/contacts/{id}",
+          "method": "GET",
+          "name": "get_contact",
+          "description": "Get contact details",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Contact"
+        },
+        {
+          "path": "/api/v1/contacts/{id}",
+          "method": "PUT",
+          "name": "update_contact",
+          "description": "Update contact",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Contact"
+        },
+        {
+          "path": "/api/v1/contacts/{id}",
+          "method": "DELETE",
+          "name": "delete_contact",
+          "description": "Delete contact",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Contact"
+        },
+        {
+          "path": "/api/v1/tasks",
+          "method": "GET",
+          "name": "list_tasks",
+          "description": "List all tasks",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Task"
+        },
+        {
+          "path": "/api/v1/tasks",
+          "method": "POST",
+          "name": "create_task",
+          "description": "Create new task",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Task"
+        },
+        {
+          "path": "/api/v1/analytics",
+          "method": "GET",
+          "name": "get_analytics",
+          "description": "Get user analytics (admin can see all)",
+          "auth_required": true,
+          "allowed_roles": ["user", "admin"],
+          "entity": "Analytics"
+        }
+      ],
+      "base_path": "/api/v1"
+    },
+    
+    "auth_config": {
+      "auth_type": "jwt",
+      "roles": {
+        "user": ["read", "write"],
+        "admin": ["read", "write", "delete", "manage_users"]
+      },
+      "premium_features": ["advanced_analytics", "bulk_export", "api_access"]
+    },
+    
+    "assumptions": [
+      "Used JWT for authentication (stateless)",
+      "Contacts are user-scoped (each user has own contacts)",
+      "Admins can see all analytics and manage users",
+      "Tasks are associated with both contacts and users",
+      "Premium features are gated by subscription status",
+      "All timestamps are in UTC"
+    ],
+    
+    "notes": "Generated with 0 repair iterations. All validations passed on first attempt. System is ready for implementation."
+  },
+  
+  "metrics": {
+    "intent_time": 3.2,
+    "design_time": 4.1,
+    "schema_time": 8.5,
+    "validation_time": 0.2,
+    "repair_attempts": 0,
+    "total_time": 16.0,
+    "success": true
+  }
+}

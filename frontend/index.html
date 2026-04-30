@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Compiler — Natural Language to Structured Config</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        App Compiler
+      </div>
+      <ul class="nav-links">
+        <li><a href="#home" class="nav-link">Home</a></li>
+        <li><a href="#compiler" class="nav-link">Compiler</a></li>
+        <li><a href="#pipeline" class="nav-link">Pipeline</a></li>
+        <li><a href="#features" class="nav-link">Features</a></li>
+      </ul>
+      <a href="#compiler" class="nav-cta">Try the Compiler</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="home">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        4-Stage Pipeline · Validation + Auto-Repair
+      </div>
+      <h1>Natural language<br><span class="hero-accent">compiles into apps</span></h1>
+      <p>Describe any application in plain English. The compiler breaks it down through Intent Extraction, System Design, Schema Generation, and Validation — producing structured, executable configs.</p>
+      <div class="hero-actions">
+        <a href="#compiler" class="btn-primary-hero">Start compiling</a>
+        <a href="#pipeline" class="btn-ghost-hero">How it works</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="code-window">
+        <div class="code-window-header">
+          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          <span class="code-window-title">output.json</span>
+        </div>
+        <div class="code-window-body">
+          <div class="code-line"><span class="json-key">"intent"</span><span class="json-colon">:</span> <span class="json-brace">{</span></div>
+          <div class="code-line indent"><span class="json-key">"app_type"</span><span class="json-colon">:</span> <span class="json-str">"CRM"</span><span class="json-comma">,</span></div>
+          <div class="code-line indent"><span class="json-key">"roles"</span><span class="json-colon">:</span> <span class="json-bracket">[</span><span class="json-str">"admin"</span><span class="json-comma">,</span> <span class="json-str">"sales_rep"</span><span class="json-bracket">]</span><span class="json-comma">,</span></div>
+          <div class="code-line indent"><span class="json-key">"auth_required"</span><span class="json-colon">:</span> <span class="json-bool">true</span></div>
+          <div class="code-line"><span class="json-brace">}</span><span class="json-comma">,</span></div>
+          <div class="code-line"><span class="json-key">"schemas"</span><span class="json-colon">:</span> <span class="json-brace">{</span></div>
+          <div class="code-line indent"><span class="json-key">"db"</span><span class="json-colon">:</span> <span class="json-brace">{</span> <span class="json-key">"tables"</span><span class="json-colon">:</span> <span class="json-bracket">[...]</span> <span class="json-brace">}</span><span class="json-comma">,</span></div>
+          <div class="code-line indent"><span class="json-key">"api"</span><span class="json-colon">:</span> <span class="json-brace">{</span> <span class="json-key">"endpoints"</span><span class="json-colon">:</span> <span class="json-bracket">[...]</span> <span class="json-brace">}</span></div>
+          <div class="code-line"><span class="json-brace">}</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="pipeline-section" id="pipeline">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>The compiler pipeline</h2>
+        <p>A single prompt is rejected. Every input passes through four isolated, validated stages — like a real compiler.</p>
+      </div>
+      <div class="pipeline-steps">
+        <div class="pipeline-step">
+          <div class="step-number">01</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <h3>Intent extraction</h3>
+          <p>Parses your description into a typed intermediate form — app type, entities, roles, features, and ambiguities. Vague inputs trigger clarification requests.</p>
+          <div class="step-output">→ <code>intent.json</code></div>
+        </div>
+        <div class="pipeline-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-number">02</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <h3>System design</h3>
+          <p>Converts intent into architecture — pages with routes, backend services, data flows, and third-party integrations. Defines the full system shape.</p>
+          <div class="step-output">→ <code>architecture.json</code></div>
+        </div>
+        <div class="pipeline-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-number">03</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+          </div>
+          <h3>Schema generation</h3>
+          <p>Four parallel sub-compilers generate UI schema, REST API schema, database schema, and auth/roles config simultaneously against strict contracts.</p>
+          <div class="step-output">→ <code>ui · api · db · auth</code></div>
+        </div>
+        <div class="pipeline-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="pipeline-step">
+          <div class="step-number">04</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3>Validation + repair</h3>
+          <p>Cross-layer consistency checks: API fields match DB schema, UI routes match auth config, roles match intent. Mismatches are auto-repaired, not silently dropped.</p>
+          <div class="step-output">→ <code>validated_config.json</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="compiler-section" id="compiler">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Compile your application</h2>
+        <p>Enter a natural language description. The pipeline runs all four stages and returns a complete, validated, executable config.</p>
+      </div>
+
+      <div class="compiler-layout">
+
+        <div class="compiler-input-panel">
+
+          <div class="example-prompts">
+            <div class="panel-label">Quick examples</div>
+            <div class="chips-row">
+              <button class="chip" data-example="crm">CRM + RBAC</button>
+              <button class="chip" data-example="pm">Project manager</button>
+              <button class="chip" data-example="ecom">E-commerce</button>
+              <button class="chip" data-example="blog">Blog platform</button>
+              <button class="chip" data-example="vague">Vague input</button>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="prompt" class="panel-label">Application description</label>
+            <textarea id="prompt" class="prompt-textarea" placeholder="Describe your application in detail...&#10;&#10;E.g. Build a CRM with login, contacts list, lead pipeline, dashboard with analytics, role-based access (admin, sales rep, manager), and a premium plan with Stripe payments."></textarea>
+            <div class="input-meta">
+              <span id="charCount">0 / 800</span>
+              <span id="charHint"></span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+
+          <div id="errorContainer" class="error-box hidden"></div>
+
+          <div class="action-row">
+            <button id="generateBtn" class="btn-compile" onclick="runPipeline()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span id="btnLabel">Compile application</span>
+            </button>
+            <button class="btn-clear" onclick="clearAll()">Clear</button>
+          </div>
+
+          <div class="pipeline-status">
+            <div class="panel-label" style="margin-bottom: 14px;">Pipeline status</div>
+            <div class="stage-row" id="stage-0">
+              <div class="stage-indicator" id="ind-0"></div>
+              <div class="stage-info">
+                <div class="stage-name">Stage 1 — Intent extraction</div>
+                <div class="stage-desc">Parsing natural language to structured intent</div>
+              </div>
+              <div class="stage-badge" id="badge-0"></div>
+            </div>
+            <div class="stage-row" id="stage-1">
+              <div class="stage-indicator" id="ind-1"></div>
+              <div class="stage-info">
+                <div class="stage-name">Stage 2 — System design</div>
+                <div class="stage-desc">Architecture, pages, services, data flows</div>
+              </div>
+              <div class="stage-badge" id="badge-1"></div>
+            </div>
+            <div class="stage-row" id="stage-2">
+              <div class="stage-indicator" id="ind-2"></div>
+              <div class="stage-info">
+                <div class="stage-name">Stage 3 — Schema generation</div>
+                <div class="stage-desc">UI · API · DB · Auth schemas in parallel</div>
+              </div>
+              <div class="stage-badge" id="badge-2"></div>
+            </div>
+            <div class="stage-row" id="stage-3">
+              <div class="stage-indicator" id="ind-3"></div>
+              <div class="stage-info">
+                <div class="stage-name">Stage 4 — Validation + repair</div>
+                <div class="stage-desc">Cross-layer consistency + auto-repair</div>
+              </div>
+              <div class="stage-badge" id="badge-3"></div>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value" id="mLatency">—</div>
+              <div class="metric-label">Latency (s)</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="mRetries">—</div>
+              <div class="metric-label">API retries</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="mScore">—</div>
+              <div class="metric-label">Quality score</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="compiler-output-panel">
+          <div class="output-tabs">
+            <button class="output-tab active" data-tab="overview">Overview</button>
+            <button class="output-tab" data-tab="schemas">Schemas</button>
+            <button class="output-tab" data-tab="validation">Validation</button>
+            <button class="output-tab" data-tab="assumptions">Assumptions</button>
+            <button class="output-tab" data-tab="raw">Raw JSON</button>
+          </div>
+
+          <div class="tab-panel active" id="tab-overview">
+            <div class="idle-state" id="overview-idle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7h8M8 12h5M8 17h3"/></svg>
+              <p>Compiled output will appear here.<br>Enter a description and click compile.</p>
+            </div>
+            <div class="overview-content hidden" id="overview-content">
+              <div class="overview-block">
+                <div class="overview-block-title">Parsed intent</div>
+                <div id="intentSummary" class="overview-text"></div>
+                <div id="intentTags" class="tags-row"></div>
+              </div>
+              <div class="overview-block">
+                <div class="overview-block-title">Architecture summary</div>
+                <div id="archSummary" class="overview-text"></div>
+              </div>
+              <div class="copy-actions">
+                <button class="btn-action" id="copyAllBtn" onclick="copyFullConfig()">Copy full JSON</button>
+                <button class="btn-action" onclick="switchTab('schemas')">View schemas →</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-schemas">
+            <div class="idle-state" id="schemas-idle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v4H4zM4 12h10v4H4zM4 20h7"/></svg>
+              <p>Schema layers will appear here after compilation.</p>
+            </div>
+            <div class="schemas-content hidden" id="schemas-content">
+              <div class="schemas-grid">
+                <div class="schema-block">
+                  <div class="schema-block-header ui">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 11l3 3L22 4"/></svg>
+                    UI Schema
+                    <span class="schema-tag ui-tag">UI</span>
+                  </div>
+                  <pre class="schema-pre" id="uiSchemaOut"></pre>
+                  <button class="btn-copy-schema" onclick="copySchema('uiSchemaOut')">Copy</button>
+                </div>
+                <div class="schema-block">
+                  <div class="schema-block-header api">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                    API Schema
+                    <span class="schema-tag api-tag">API</span>
+                  </div>
+                  <pre class="schema-pre" id="apiSchemaOut"></pre>
+                  <button class="btn-copy-schema" onclick="copySchema('apiSchemaOut')">Copy</button>
+                </div>
+                <div class="schema-block">
+                  <div class="schema-block-header db">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    Database Schema
+                    <span class="schema-tag db-tag">DB</span>
+                  </div>
+                  <pre class="schema-pre" id="dbSchemaOut"></pre>
+                  <button class="btn-copy-schema" onclick="copySchema('dbSchemaOut')">Copy</button>
+                </div>
+                <div class="schema-block">
+                  <div class="schema-block-header auth">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    Auth + Roles
+                    <span class="schema-tag auth-tag">AUTH</span>
+                  </div>
+                  <pre class="schema-pre" id="authSchemaOut"></pre>
+                  <button class="btn-copy-schema" onclick="copySchema('authSchemaOut')">Copy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-validation">
+            <div class="idle-state" id="validation-idle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <p>Validation and auto-repair log will appear here.</p>
+            </div>
+            <div class="validation-content hidden" id="validation-content">
+              <div id="validationList" class="validation-list"></div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-assumptions">
+            <div class="idle-state" id="assumptions-idle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <p>When your prompt is ambiguous, the system documents every inference it makes here.</p>
+            </div>
+            <div class="assumptions-content hidden" id="assumptions-content">
+              <div id="assumptionsList" class="assumptions-list"></div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-raw">
+            <div class="idle-state" id="raw-idle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              <p>Full compiled JSON output will appear here.</p>
+            </div>
+            <div class="raw-content hidden" id="raw-content">
+              <pre class="raw-pre" id="rawJsonOut"></pre>
+              <button class="btn-action" style="margin-top: 12px;" onclick="copyFullConfig()">Copy all</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features-section" id="features">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>What makes this a compiler, not a script</h2>
+        <p>Each requirement from the task specification is implemented as a distinct, testable system component.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon pipeline-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+          <h3>Multi-stage pipeline</h3>
+          <p>Four isolated stages each with their own prompt contract, output schema, and retry budget. No stage shares context with another until explicitly passed through.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon repair-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Intelligent repair</h3>
+          <p>Mismatches between layers are detected and surgically fixed — missing roles injected, routes synced, premium flags corrected. No blind full-retry.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon schema-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 12h10v4H4z"/></svg>
+          </div>
+          <h3>Strict schema contracts</h3>
+          <p>Every stage has a defined JSON output contract. Invalid JSON, missing fields, and type errors are caught — the stage retries rather than passing bad data forward.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon vague-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          </div>
+          <h3>Failure handling</h3>
+          <p>Vague or conflicting inputs are caught at Stage 1 before wasting API calls. The system asks a targeted clarification question instead of producing garbage output.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon parallel-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          </div>
+          <h3>Parallel sub-compilers</h3>
+          <p>Stage 3 fires four independent API calls simultaneously — UI, API, DB, and Auth schemas are generated in parallel, then reconciled in Stage 4.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon metrics-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>Live metrics</h3>
+          <p>Every run tracks latency, API retry count, and quality score (ratio of passing validation checks). Execution-level observability, not just output.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+          App Compiler
+        </div>
+        <p>Natural language → structured config → working application</p>
+      </div>
+      <div class="footer-links-group">
+        <h4>Pipeline</h4>
+        <ul>
+          <li><a href="#pipeline">How it works</a></li>
+          <li><a href="#compiler">Try it</a></li>
+        </ul>
+      </div>
+      <div class="footer-links-group">
+        <h4>System</h4>
+        <ul>
+          <li><a href="#">Architecture docs</a></li>
+          <li><a href="#">API reference</a></li>
+        </ul>
+      </div>
+      <div class="footer-links-group">
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">Evaluation dataset</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

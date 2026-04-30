@@ -1,0 +1,29 @@
+# Virtual Environment
+.venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment Variables
+.env
+.env.local
+
+# Test Cache
+.pytest_cache/
+
+# Data & Private Files
+data/
+*.pickle
+*.pkl
+*.joblib
+
+# Logs
+*.log
+logs/
+
+# OS Files
+.DS_Store
+Thumbs.db
