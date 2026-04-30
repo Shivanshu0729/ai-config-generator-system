@@ -1,324 +1,200 @@
-<<<<<<< HEAD
-AI Config Generator System
+# AI Config Generator System
 
 A production-grade system that converts natural language into complete, validated, and executable application configurations using a multi-stage compiler-like pipeline.
 
 This project is designed as an engineering system rather than a prompt-based script, focusing on reliability, control, and execution readiness.
-=======
-# AI Config Generator System
 
-A production-oriented toolchain that converts natural-language requirements into validated, executable application configurations using a multi-stage, compiler-like pipeline.
+**Repository:** https://github.com/Shivanshu0729/ai-config-generator-system
 
-This repository contains the API backend, the pipeline implementation, an evaluation harness, and a small frontend for local testing.
+---
 
-**Repository**: https://github.com/Shivanshu0729/ai-config-generator-system
->>>>>>> 91c0769 (docs: polished README with usage, architecture, and quickstart)
-
-Overview
-
-<<<<<<< HEAD
-The system transforms open-ended user instructions into structured application configurations including:
-
-UI schema (pages, components, layouts)
-API schema (endpoints, methods, validation)
-Database schema (tables, relationships)
-Authentication and authorization rules
-Business logic constraints
-
-The output is strictly validated and designed to be directly usable in downstream runtime systems.
-=======
 ## Highlights
 
 - Multi-stage pipeline: intent → design → schema → validation → repair → output
-- Deterministic, schema-driven outputs (Pydantic models enforce correctness)
-- Intelligent repair loop (selective fixes rather than blind regeneration)
-- Metrics & evaluation framework for measuring success, latency and repairs
-- Simple frontend for rapid testing and previewing generated configs
->>>>>>> 91c0769 (docs: polished README with usage, architecture, and quickstart)
+- Deterministic, schema-driven outputs using Pydantic models
+- Intelligent repair system (no blind retries)
+- Evaluation framework with metrics tracking
+- Execution-ready configuration generation
+- Simple frontend for testing and visualization
 
-System Architecture
+---
 
-<<<<<<< HEAD
-The system follows a multi-stage pipeline:
+## Overview
 
-Intent Extraction
+The system transforms open-ended user instructions into structured application configurations, including:
+
+- UI schema (pages, components, layouts)
+- API schema (endpoints, methods, validation)
+- Database schema (tables, relationships)
+- Authentication and authorization rules
+- Business logic constraints
+
+The generated output is validated and designed to be directly usable in downstream runtime systems.
+
+---
+
+## System Architecture
+
+The system follows a modular multi-stage pipeline:
+
+### 1. Intent Extraction
 Parses natural language into structured intent.
-System Design
-Converts intent into application architecture, including entities, roles, and flows.
-Schema Generation
-Generates database, API, UI, and authentication configurations.
-Validation Layer
+
+### 2. System Design
+Converts intent into application architecture (entities, roles, flows).
+
+### 3. Schema Generation
+Generates DB, API, UI, and authentication configurations.
+
+### 4. Validation Layer
 Ensures structural correctness, type safety, and cross-layer consistency.
-Repair Engine
-Fixes inconsistencies without full regeneration using targeted corrections.
-Execution Awareness
-Ensures output is usable and logically complete for runtime systems.
-Key Design Principles
-Multi-Stage Pipeline
 
-Each stage is modular and independent, improving control and reducing hallucination.
+### 5. Repair Engine
+Fixes inconsistencies using targeted corrections.
 
-Strict Schema Enforcement
-
-All outputs conform to predefined Pydantic models ensuring:
-
-Valid JSON
-Required fields
-Type safety
-Cross-layer consistency
-Intelligent Repair System
-
-Instead of retrying entire generations:
-
-Missing fields are added
-Invalid references are corrected
-Logical gaps are resolved incrementally
-Deterministic Behavior
-
-Structured prompting and controlled temperature ensure consistent outputs for the same input.
-
-Execution Awareness
-
-Generated configurations are:
-
-Structurally valid
-Logically complete
-Ready for execution
-Core Components
-Pipeline Modules
-Intent Extractor (app/pipeline/intent.py)
-Converts natural language into structured intent.
-System Designer (app/pipeline/design.py)
-Builds application architecture.
-# AI Config Generator System
-
-A production-oriented toolchain that converts natural-language requirements into validated, executable application configurations using a multi-stage, compiler-like pipeline.
-
-This repository contains the API backend, the pipeline implementation, an evaluation harness, and a small frontend for local testing.
-
-**Repository**: https://github.com/Shivanshu0729/ai-config-generator-system
+### 6. Execution Awareness
+Ensures output is complete and usable for runtime systems.
 
 ---
 
-## Highlights
+## Key Design Principles
 
-- Multi-stage pipeline: intent → design → schema → validation → repair → output
-- Deterministic, schema-driven outputs (Pydantic models enforce correctness)
-- Intelligent repair loop (selective fixes rather than blind regeneration)
-- Metrics & evaluation framework for measuring success, latency and repairs
-- Simple frontend for rapid testing and previewing generated configs
+### Multi-Stage Pipeline
+Each stage is independent, improving control and reducing hallucination.
 
----
+### Strict Schema Enforcement
+All outputs follow predefined Pydantic models ensuring:
 
-## Quickstart
+- Valid JSON
+- Required fields
+- Type safety
+- Cross-layer consistency
 
-Prerequisites:
-- Python 3.10+ (recommended)
-- Git
+### Intelligent Repair System
+Instead of full regeneration:
 
-1. Create and activate a virtual environment:
+- Missing fields are added
+- Invalid references are corrected
+- Logical gaps are resolved
 
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# macOS / Linux
-source .venv/bin/activate
-```
+### Deterministic Behavior
+Structured prompting + controlled temperature ensures consistent outputs.
 
-2. Install dependencies:
+### Execution Awareness
+Outputs are:
 
-```bash
-pip install -r requirements.txt
-```
-
-3. Configure your LLM key (set `GROQ_API_KEY` or the provider key used by your LLM wrapper):
-
-```bash
-# PowerShell example
-$env:GROQ_API_KEY = "gsk_..."
-```
-
-4. Start the API server (default port used in development is 8001):
-
-```bash
-uvicorn app.main:app --reload --port 8001
-```
-
-5. Open the frontend for quick manual tests:
-
-```bash
-# from the project root
-pushd frontend
-python -m http.server 5500
-# then open http://localhost:5500/index.html
-popd
-```
-
-The API docs are available at `http://127.0.0.1:8001/docs` after the server starts.
+- Structurally valid
+- Logically complete
+- Ready for execution
 
 ---
 
 ## Architecture Overview
 
-The pipeline is intentionally modular to improve reliability and observability:
+Core pipeline modules:
 
-- `app/pipeline/intent.py` — Convert prompt → structured intent
-- `app/pipeline/design.py` — Map intent → architectural design
-- `app/pipeline/schema.py` — Produce DB / UI / API schemas
-- `app/pipeline/validator.py` — Mechanical validation of results
-- `app/pipeline/repair.py` — Targeted fixes for common failures
-- `app/pipeline/orchestrator.py` — Orchestrates stages, metrics, and repair loop
+- `app/pipeline/intent.py` — Intent extraction  
+- `app/pipeline/design.py` — System design  
+- `app/pipeline/schema.py` — Schema generation  
+- `app/pipeline/validator.py` — Validation  
+- `app/pipeline/repair.py` — Repair engine  
+- `app/pipeline/orchestrator.py` — Pipeline coordinator  
 
-The FastAPI backend (`app/main.py` and `app/routes/generate.py`) exposes `POST /api/v1/generate` and returns a JSON payload containing `success`, `config`, and `metrics`.
+FastAPI backend:
 
-Sample output and schema expectations are provided in `SAMPLE_OUTPUT.json`.
+- `POST /api/v1/generate`
+- `GET /api/v1/health`
 
 ---
 
-## Usage Examples
+## Quickstart
 
-Simple curl example to generate a config (replace prompt as needed):
+### 1. Clone Repository
 
 ```bash
-curl -X POST http://127.0.0.1:8001/api/v1/generate \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Build a CRM with login, contacts, dashboard, and role-based access"}'
+git clone https://github.com/Shivanshu0729/ai-config-generator-system.git
+cd ai-config-generator-system
 ```
 
-Python example using the orchestrator directly:
-
-```python
-from app.pipeline.orchestrator import Orchestrator
-
-orch = Orchestrator()
-result = orch.run("Simple todo app with authentication and notes")
-if result["success"]:
-    cfg = result["config"]
-    print(cfg.get("app_name"))
-```
-
----
-
-## Testing & Evaluation
-
-- Run unit tests and evaluation scripts with:
-
+### 2. Create Virtual Environment
 ```bash
-pytest -q
-python -m tests.run_evaluation
+python -m venv .venv
+.venv\Scripts\activate   # Windows
+# source .venv/bin/activate   # macOS/Linux
 ```
 
-- The evaluation harness records metrics such as `success`, `repair_attempts`, and `total_time` for each case.
-
----
-
-## Development Notes
-
-- The system favors structured prompting and lower temperature settings for schema stages to reduce hallucination.
-- Validation is mechanical and runs before any repair attempts.
-- Repair attempts are limited (default max 3) to avoid runaway generation costs.
-
-If you add new pipeline stages, ensure the Pydantic models in `app/models` are updated and test coverage is extended.
-
----
-
-## Project Structure
-
-See the primary folders:
-
-- `app/` — FastAPI server, pipeline, services, and models
-- `frontend/` — Static UI for quick testing and previews
-- `tests/` — Evaluation and test harness
-- `SAMPLE_OUTPUT.json` — Example generated config
-
----
-
-## Contributing
-
-Contributions are welcome. Suggested workflow:
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new behavior
-4. Open a pull request with a clear description
-
----
-
-## License
-
-This project is provided under the MIT License. See `LICENSE` for details (add a `LICENSE` file if you publish this publicly).
-
----
-
-If you'd like, I can also add a GitHub Actions CI workflow that runs linting and tests on PRs.
-  -d '{"prompt": "Build a CRM with login, contacts, dashboard, and role-based access"}'
-```
-
-Python example using the orchestrator directly:
-
-```python
-from app.pipeline.orchestrator import Orchestrator
-
-orch = Orchestrator()
-result = orch.run("Simple todo app with authentication and notes")
-if result["success"]:
-    cfg = result["config"]
-    print(cfg.get("app_name"))
-```
-
----
-
-## Testing & Evaluation
-
-- Run unit tests and evaluation scripts with:
-
+### 3. Install Dependencies
 ```bash
-pytest -q
-python -m tests.run_evaluation
+pip install -r requirements.txt
 ```
 
-- The evaluation harness records metrics such as `success`, `repair_attempts`, and `total_time` for each case.
+### 4. Set Environment Variables
+```bash
+GROQ_API_KEY=your_api_key
+GROQ_MODEL=llama-3.1-8b-instant
+```
 
----
+### 5. Run Backend
+```bash
+uvicorn app.main:app --reload --port 8001
+```
+Access API docs:
 
-## Development Notes
+http://127.0.0.1:8001/docs
 
-- The system favors structured prompting and lower temperature settings for schema stages to reduce hallucination.
-- Validation is mechanical and runs before any repair attempts.
-- Repair attempts are limited (default max 3) to avoid runaway generation costs.
+### Frontend
+cd frontend
+python -m http.server 5500
 
-If you add new pipeline stages, ensure the Pydantic models in `app/models` are updated and test coverage is extended.
+Evaluation Framework
 
----
+Includes:
 
-## Project Structure
+10 production prompts
+10 edge-case prompts
+Metrics Tracked
+Success rate
+Repair attempts
+Latency
+Failure types
+Reliability Features
+Structured prompting
+Validation before output
+Repair loop (max 3 attempts)
+Type-safe schema enforcement
+Metrics tracking
+Cost vs Performance Tradeoffs
+Latency
 
-See the primary folders:
+Multi-stage pipeline increases latency but improves reliability.
 
-- `app/` — FastAPI server, pipeline, services, and models
-- `frontend/` — Static UI for quick testing and previews
-- `tests/` — Evaluation and test harness
-- `SAMPLE_OUTPUT.json` — Example generated config
+Cost
 
----
+Repair-based approach reduces unnecessary LLM calls.
 
-## Contributing
+Quality
 
-Contributions are welcome. Suggested workflow:
+Lower temperature improves consistency at the cost of variability.
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new behavior
-4. Open a pull request with a clear description
+Project Structure
+app/
+├── main.py
+├── models/
+├── services/
+├── utils/
+├── routes/
+└── pipeline/
 
----
+frontend/
+tests/
+requirements.txt
+README.md
+What Makes This System Strong
+Modular pipeline architecture
+Controlled LLM interaction
+Validation and repair mechanisms
+Execution-ready outputs
+Evaluation framework
+Conclusion
 
-## License
-
-This project is provided under the MIT License. See `LICENSE` for details (add a `LICENSE` file if you publish this publicly).
-
----
-
-If you'd like, I can also add a GitHub Actions CI workflow that runs linting and tests on PRs.
->>>>>>> 91c0769 (docs: polished README with usage, architecture, and quickstart)
+This system demonstrates system-level engineering by combining structured generation, validation, and execution awareness. It is designed to handle real-world ambiguity while maintaining reliability, consistency, and control over outputs.
