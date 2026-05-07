@@ -1,5 +1,4 @@
-// const API_BASE = "https://ai-config-generator-system-1.onrender.com/api/v1";
-const API_BASE = "http://127.0.0.1:8000/api/v1";
+const API_BASE = "https://ai-config-generator-system-1.onrender.com/api/v1";
 const DEFAULT_DAILY_LIMIT = 5;
 
 const EXAMPLE_PROMPTS = {
