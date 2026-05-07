@@ -1,263 +1,72 @@
-# Web Maker Bot - Setup & Deployment Guide
+# Deployment Guide
 
-## Local Development Setup
+## Local development
 
-### 1. Prerequisites
+### Requirements
+
 - Python 3.9+
 - Virtual environment
-- Groq API key
+- `GROQ_API_KEY`
 
-### 2. Installation
+### Install and run
 
 ```bash
-# Clone or navigate to project
-cd web_maker_bot
-
-# Create virtual environment
 python -m venv .venv
-
-# Activate
-source .venv/bin/activate  # macOS/Linux
-# or
-.venv\Scripts\activate     # Windows
-
-# Install dependencies
+.venv\Scripts\activate
 pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
 ```
 
-### 3. Environment Setup
+Open:
+
+- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8000/docs`
+
+## Environment variables
+
+- `GROQ_API_KEY` - required for generation
+- `GROQ_MODEL` - optional model override
+- `APP_GENERATION_LIMIT` - defaults to `5`
+- `APP_GENERATION_LIMIT_WINDOW_SECONDS` - defaults to `86400`
+- `APP_RATE_LIMIT_DB_PATH` - optional override for the SQLite file
+
+## API endpoints
+
+- `GET /api/health` - app health check
+- `GET /api/v1/rate-limit` - current daily quota status
+- `POST /api/v1/generate` - generate config from prompt
+
+## Frontend behavior
+
+- The frontend is served by the backend from `/`.
+- The JavaScript client calls `http://127.0.0.1:8000/api/v1` in local development.
+- The UI shows the live rate-limit counter beside the prompt box.
+
+## Deployment notes
+
+### Render or similar PaaS
+
+- Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Ensure `GROQ_API_KEY` is set in the service environment.
+- Make sure the instance can write to the SQLite rate-limit file path.
+
+### Docker
+
+Recommended container start command:
 
 ```bash
-# Create .env file
-cp .env.example .env
-
-# Edit .env and add your Groq API key
-GROQ_API_KEY="gsk_..."
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### 4. Run Server
+## Important operational detail
 
-```bash
-# Start FastAPI server
-python app/main.py
+The daily limit is enforced server-side. If the app is restarted, the rate-limit database file remains the source of truth unless you intentionally change `APP_RATE_LIMIT_DB_PATH`.
 
-# Or with uvicorn directly
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+## Troubleshooting
 
-Server runs at: `http://localhost:8000`
-Docs at: `http://localhost:8000/docs`
-
----
-
-## API Usage
-
-### Generate Application Config
-
-**Endpoint**: `POST /api/v1/generate`
-
-**Request**:
-```json
-{
-  "prompt": "Build a CRM with login, contacts, dashboard, role-based access, and premium plan with payments. Admins can see analytics."
-}
-```
-
-**Response** (Success):
-```json
-{
-  "success": true,
-  "config": {
-    "app_name": "CRM System",
-    "app_description": "...",
-    "entities": { ... },
-    "db_schema": { ... },
-    "ui_schema": { ... },
-    "api_schema": { ... },
-    "auth_config": { ... },
-    "assumptions": [ ... ],
-    "notes": "..."
-  },
-  "metrics": {
-    "repair_attempts": 0,
-    "total_time": 18.5,
-    "success": true
-  }
-}
-```
-
-**Response** (Failure):
-```json
-{
-  "success": false,
-  "error": "Validation failed after 3 attempts",
-  "metrics": {
-    "repair_attempts": 3,
-    "total_time": 55.2,
-    "success": false
-  }
-}
-```
-
----
-
-## Running Evaluation
-
-### Run Full Test Suite
-
-```bash
-# Run all 20 tests
-python -m tests.run_evaluation
-
-# Output saved to: evaluation_results.json
-```
-
-### Run Custom Test
-
-```python
-from tests.evaluation import EvaluationRunner, TestCase
-
-runner = EvaluationRunner()
-
-# Add custom test
-custom_test = TestCase(
-    id="custom-001",
-    category="production",
-    prompt="Your custom prompt here",
-    description="Test description"
-)
-
-runner.results = []
-result = runner._run_test(custom_test)
-print(f"Success: {result.success}, Time: {result.total_time}s")
-```
-
----
-
-## Frontend Integration
-
-### React Example
-
-```tsx
-import { useState } from 'react';
-
-export function AppGenerator() {
-  const [prompt, setPrompt] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [config, setConfig] = useState(null);
-
-  const generateApp = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:8000/api/v1/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      });
-      
-      const data = await response.json();
-      setConfig(data);
-    } catch (error) {
-      console.error('Generation failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Describe your app..."
-      />
-      <button onClick={generateApp} disabled={loading}>
-        {loading ? 'Generating...' : 'Generate'}
-      </button>
-      
-      {config && (
-        <pre>{JSON.stringify(config, null, 2)}</pre>
-      )}
-    </div>
-  );
-}
-```
-
-### Next.js API Route
-
-```typescript
-// pages/api/generate.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST') return res.status(405).end();
-
-  try {
-    const response = await fetch('http://localhost:8000/api/v1/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: req.body.prompt })
-    });
-
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (error) {
-    res.status(500).json({ error: String(error) });
-  }
-}
-```
-
----
-
-## Docker Deployment
-
-### Dockerfile
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-ENV PYTHONUNBUFFERED=1
-ENV GROQ_API_KEY=${GROQ_API_KEY}
-
-EXPOSE 8000
-
-CMD ["python", "app/main.py"]
-```
-
-### Docker Compose
-
-```yaml
-version: '3.8'
-
-services:
-  web-maker-bot:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - GROQ_API_KEY=${GROQ_API_KEY}
-    volumes:
-      - ./logs:/app/logs
-
-  # Optional: Nginx reverse proxy
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - web-maker-bot
+- If the UI shows `API limit: unavailable`, confirm the backend is running at `127.0.0.1:8000`.
+- If generation fails, check `GROQ_API_KEY` and the selected Groq model.
+- If the 6th request is not blocked, make sure the request is reaching the local backend and not a stale remote URL.
 ```
 
 **Run**:

@@ -7,7 +7,6 @@ from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-
 class LLMService:
     """Wrapper around the Groq API with structured output support."""
 
@@ -82,6 +81,11 @@ class LLMService:
 
             except Exception as e:
                 logger.error(f"Attempt {attempt + 1}: LLM error: {e}")
+                
+                error_str = str(e).lower()
+                if "rate" in error_str or "quota" in error_str or "limit" in error_str:
+                    logger.error(f"Rate limit exceeded: {e}")
+                    raise
 
                 if attempt == self.max_retries - 1:
                     raise

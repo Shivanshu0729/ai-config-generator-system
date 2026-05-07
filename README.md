@@ -1,198 +1,105 @@
 # AI Config Generator System
 
-A production-grade system that converts natural language into complete, validated, and executable application configurations using a multi-stage compiler-like pipeline.
+AI Config Generator System converts a natural language prompt into a validated application configuration through a compiler-style pipeline.
 
-This project is designed as an engineering system rather than a prompt-based script, focusing on reliability, control, and execution readiness.
+The current app runs as a single FastAPI server that serves both the API and the frontend from `http://127.0.0.1:8000`.
 
----
+## What it does
 
-## Highlights
+- Parses a prompt into structured intent
+- Designs the application architecture
+- Generates UI, API, database, and auth schemas
+- Validates the output and applies targeted repair when needed
+- Tracks a per-client daily rate limit
+- Serves a browser UI for testing and viewing results
 
-- Multi-stage pipeline: intent → design → schema → validation → repair → output
-- Deterministic, schema-driven outputs using Pydantic models
-- Intelligent repair system (no blind retries)
-- Evaluation framework with metrics tracking
-- Execution-ready configuration generation
-- Simple frontend for testing and visualization
+## Current runtime model
 
----
+- Frontend: served from `frontend/` by FastAPI at `/`
+- API base: `/api/v1`
+- Generate endpoint: `POST /api/v1/generate`
+- Rate-limit status endpoint: `GET /api/v1/rate-limit`
+- Health endpoint: `GET /api/health`
+- Default limit: 5 requests per day per client
 
-## Overview
+## Pipeline
 
-The system transforms open-ended user instructions into structured application configurations, including:
+1. Intent extraction
+2. System design
+3. Schema generation
+4. Validation
+5. Repair
+6. Final config output
 
-- UI schema (pages, components, layouts)
-- API schema (endpoints, methods, validation)
-- Database schema (tables, relationships)
-- Authentication and authorization rules
-- Business logic constraints
+## Repository layout
 
-The generated output is validated and designed to be directly usable in downstream runtime systems.
+- `app/main.py` - FastAPI app, CORS, static frontend mount
+- `app/routes/generate.py` - generate and rate-limit routes
+- `app/utils/rate_limit.py` - SQLite-backed rate-limit storage
+- `app/pipeline/` - intent, design, schema, validator, repair, orchestrator
+- `app/services/llm_service.py` - Groq client wrapper
+- `frontend/` - HTML, CSS, and JavaScript UI
+- `tests/` - evaluation scripts and tests
 
----
+## Features
 
-## System Architecture
+- Local-first development experience
+- Live rate-limit display in the UI
+- Rate-limit enforcement before generation
+- Structured outputs with repair-aware flow
+- Browser-based prompt testing
 
-The system follows a modular multi-stage pipeline:
+## Environment variables
 
-### 1. Intent Extraction
-Parses natural language into structured intent.
+- `GROQ_API_KEY` - required for LLM generation
+- `GROQ_MODEL` - optional model override
+- `APP_GENERATION_LIMIT` - default `5`
+- `APP_GENERATION_LIMIT_WINDOW_SECONDS` - default `86400`
+- `APP_RATE_LIMIT_DB_PATH` - optional SQLite path override
 
-### 2. System Design
-Converts intent into application architecture (entities, roles, flows).
+## Example request
 
-### 3. Schema Generation
-Generates DB, API, UI, and authentication configurations.
-
-### 4. Validation Layer
-Ensures structural correctness, type safety, and cross-layer consistency.
-
-### 5. Repair Engine
-Fixes inconsistencies using targeted corrections.
-
-### 6. Execution Awareness
-Ensures output is complete and usable for runtime systems.
-
----
-
-## Key Design Principles
-
-### Multi-Stage Pipeline
-Each stage is independent, improving control and reducing hallucination.
-
-### Strict Schema Enforcement
-All outputs follow predefined Pydantic models ensuring:
-
-- Valid JSON
-- Required fields
-- Type safety
-- Cross-layer consistency
-
-### Intelligent Repair System
-Instead of full regeneration:
-
-- Missing fields are added
-- Invalid references are corrected
-- Logical gaps are resolved
-
-### Deterministic Behavior
-Structured prompting + controlled temperature ensures consistent outputs.
-
-### Execution Awareness
-Outputs are:
-
-- Structurally valid
-- Logically complete
-- Ready for execution
-
----
-
-## Architecture Overview
-
-Core pipeline modules:
-
-- `app/pipeline/intent.py` — Intent extraction  
-- `app/pipeline/design.py` — System design  
-- `app/pipeline/schema.py` — Schema generation  
-- `app/pipeline/validator.py` — Validation  
-- `app/pipeline/repair.py` — Repair engine  
-- `app/pipeline/orchestrator.py` — Pipeline coordinator  
-
-FastAPI backend:
-
-- `POST /api/v1/generate`
-- `GET /api/v1/health`
-
----
-
-## Quickstart
-
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/Shivanshu0729/ai-config-generator-system.git
-cd ai-config-generator-system
+```json
+{
+	"prompt": "Build a CRM with login, contacts list, lead pipeline, dashboard with analytics, role-based access, and Stripe payments."
+}
 ```
 
-### 2. Create Virtual Environment
+## Example response shape
+
+```json
+{
+	"success": true,
+	"config": { "...": "..." },
+	"metrics": {
+		"latency_seconds": 12.4,
+		"api_retries": 1,
+		"quality_score": 92,
+		"rate_limit": {
+			"total_limit": 5,
+			"used": 1,
+			"remaining": 4
+		}
+	}
+}
+```
+
+## Quick start
+
 ```bash
 python -m venv .venv
-.venv\Scripts\activate   # Windows
-# source .venv/bin/activate   # macOS/Linux
-```
-
-### 3. Install Dependencies
-```bash
+.venv\Scripts\activate
 pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
 ```
 
-### 4. Set Environment Variables
-```bash
-GROQ_API_KEY=your_api_key
-GROQ_MODEL=llama-3.1-8b-instant
-```
+Open:
 
-### 5. Run Backend
-```bash
-uvicorn app.main:app --reload --port 8001
-```
-Access API docs:
+- `http://127.0.0.1:8000`
+- `http://127.0.0.1:8000/docs`
 
-http://127.0.0.1:8001/docs
+## Notes
 
-### Frontend
-cd frontend
-python -m http.server 5500
-
-Evaluation Framework
-
-Includes:
-
-10 production prompts
-10 edge-case prompts
-Metrics Tracked
-Success rate
-Repair attempts
-Latency
-Failure types
-Reliability Features
-Structured prompting
-Validation before output
-Repair loop (max 3 attempts)
-Type-safe schema enforcement
-Metrics tracking
-Cost vs Performance Tradeoffs
-Latency
-
-Multi-stage pipeline increases latency but improves reliability.
-
-Cost
-
-Repair-based approach reduces unnecessary LLM calls.
-
-Quality
-
-Lower temperature improves consistency at the cost of variability.
-
-Project Structure
-app/
-├── main.py
-├── models/
-├── services/
-├── utils/
-├── routes/
-└── pipeline/
-
-frontend/
-tests/
-requirements.txt
-README.md
-What Makes This System Strong
-Modular pipeline architecture
-Controlled LLM interaction
-Validation and repair mechanisms
-Execution-ready outputs
-Evaluation framework
-Conclusion
-
-This system demonstrates system-level engineering by combining structured generation, validation, and execution awareness. It is designed to handle real-world ambiguity while maintaining reliability, consistency, and control over outputs.
+- The frontend and backend use the same local origin during development.
+- The rate limit is checked on every generation request.
+- On the 6th request inside the daily window, the API returns a rate-limit error.

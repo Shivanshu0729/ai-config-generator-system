@@ -1,4 +1,6 @@
-const API_BASE = 'http://127.0.0.1:8001/api/v1';
+// const API_BASE = "https://ai-config-generator-system-1.onrender.com/api/v1";
+const API_BASE = "http://127.0.0.1:8000/api/v1";
+const DEFAULT_DAILY_LIMIT = 5;
 
 const EXAMPLE_PROMPTS = {
   crm: 'Build a CRM with login, contacts list, lead pipeline, dashboard with analytics, role-based access (admin, sales rep, manager), and a premium plan with Stripe payments. Admins can see full analytics. Sales reps can only view their own contacts.',
@@ -10,6 +12,7 @@ const EXAMPLE_PROMPTS = {
 
 let fullConfig = {};
 let isRunning = false;
+let currentRateLimit = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   setupCharCounter();
@@ -18,6 +21,13 @@ window.addEventListener('DOMContentLoaded', () => {
   setupNavScroll();
   resetAllStages();
   setMetrics(null, null, null);
+  setRateLimit({
+    allowed: true,
+    total: DEFAULT_DAILY_LIMIT,
+    remaining: DEFAULT_DAILY_LIMIT,
+    resetAfterSeconds: null,
+  });
+  refreshRateLimit();
 });
 
 function setupCharCounter() {
@@ -116,6 +126,91 @@ function setMetrics(latency, retries, score) {
   document.getElementById('mScore').textContent = Number.isFinite(score) ? `${score}%` : '—';
 }
 
+function setRateLimit(rateLimit) {
+  currentRateLimit = rateLimit;
+
+  const total = rateLimit && Number.isFinite(rateLimit.total) ? rateLimit.total : null;
+  const remaining = rateLimit && Number.isFinite(rateLimit.remaining) ? rateLimit.remaining : null;
+  const allowed = rateLimit && typeof rateLimit.allowed === 'boolean' ? rateLimit.allowed : null;
+  const resetAfterSeconds = rateLimit && Number.isFinite(rateLimit.resetAfterSeconds)
+    ? rateLimit.resetAfterSeconds
+    : null;
+
+  const rateLimitValue = document.getElementById('mRateLimit');
+  const promptLimitPill = document.getElementById('promptLimitPill');
+  if (remaining !== null && total !== null) {
+    rateLimitValue.textContent = `${remaining} / ${total}`;
+
+    const exhausted = remaining === 0 || allowed === false;
+    if (promptLimitPill) {
+      promptLimitPill.textContent = exhausted
+        ? `API limit exceeded: ${total}/${total} used`
+        : `API limit: ${remaining} left of ${total}`;
+    }
+  } else {
+    rateLimitValue.textContent = '—';
+    if (promptLimitPill) {
+      promptLimitPill.textContent = 'API limit: unavailable';
+    }
+  }
+
+  const resetText = resetAfterSeconds !== null ? formatResetCountdown(resetAfterSeconds) : '—';
+  rateLimitValue.dataset.reset = resetText;
+  rateLimitValue.title = resetText === '—' ? 'Rate limit is unavailable' : `Resets in ${resetText}`;
+}
+
+function formatResetCountdown(totalSeconds) {
+  if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) {
+    return 'resets soon';
+  }
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}m`;
+  }
+
+  return `${Math.max(1, Math.floor(totalSeconds))}s`;
+}
+
+function parseNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function extractRateLimitState(response, payload) {
+  const payloadLimit = payload && payload.metrics ? payload.metrics.rate_limit : null;
+
+  const total = parseNumber(response.headers.get('X-RateLimit-Limit'))
+    ?? parseNumber(payloadLimit && payloadLimit.total_limit)
+    ?? parseNumber(payloadLimit && payloadLimit.total)
+    ?? null;
+
+  const remaining = parseNumber(response.headers.get('X-RateLimit-Remaining'))
+    ?? parseNumber(payloadLimit && payloadLimit.remaining)
+    ?? null;
+
+  const resetAfterSeconds = parseNumber(response.headers.get('Retry-After'))
+    ?? parseNumber(payloadLimit && payloadLimit.reset_after_seconds)
+    ?? parseNumber(payloadLimit && payloadLimit.resetAfterSeconds)
+    ?? null;
+
+  if (total === null && remaining === null && resetAfterSeconds === null) {
+    return null;
+  }
+
+  return {
+    total,
+    remaining,
+    resetAfterSeconds,
+  };
+}
+
 function setLoading(loading) {
   const button = document.getElementById('generateBtn');
 
@@ -161,6 +256,34 @@ function clearAll() {
   switchTab('overview');
 }
 
+async function refreshRateLimit() {
+  try {
+    const response = await fetch(`${API_BASE}/rate-limit`);
+    if (!response.ok) {
+      return;
+    }
+
+    const payload = await response.json();
+    if (payload && payload.rate_limit) {
+      setRateLimit(payload.rate_limit);
+    } else {
+      setRateLimit({
+        allowed: true,
+        total: DEFAULT_DAILY_LIMIT,
+        remaining: DEFAULT_DAILY_LIMIT,
+        resetAfterSeconds: null,
+      });
+    }
+  } catch {
+    setRateLimit({
+      allowed: true,
+      total: DEFAULT_DAILY_LIMIT,
+      remaining: DEFAULT_DAILY_LIMIT,
+      resetAfterSeconds: null,
+    });
+  }
+}
+
 async function runPipeline() {
   if (isRunning) return;
 
@@ -193,11 +316,23 @@ async function runPipeline() {
       body: JSON.stringify({ prompt })
     });
 
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
     }
 
-    const payload = await response.json();
+    const rateLimit = extractRateLimitState(response, payload);
+    if (rateLimit) {
+      setRateLimit(rateLimit);
+    }
+
+    if (!response.ok) {
+      setStage(0, 'error');
+      showError((payload && (payload.detail || payload.error)) || `Request failed with status ${response.status}`);
+      return;
+    }
 
     if (!payload.success) {
       setStage(0, 'error');

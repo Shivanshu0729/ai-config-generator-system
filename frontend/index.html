@@ -150,7 +150,10 @@
           </div>
 
           <div class="input-group">
-            <label for="prompt" class="panel-label">Application description</label>
+            <div class="prompt-header">
+              <label for="prompt" class="panel-label">Application description</label>
+              <div class="prompt-limit-pill" id="promptLimitPill">API limit: loading...</div>
+            </div>
             <textarea id="prompt" class="prompt-textarea" placeholder="Describe your application in detail...&#10;&#10;E.g. Build a CRM with login, contacts list, lead pipeline, dashboard with analytics, role-based access (admin, sales rep, manager), and a premium plan with Stripe payments."></textarea>
             <div class="input-meta">
               <span id="charCount">0 / 800</span>
@@ -217,6 +220,10 @@
             <div class="metric-card">
               <div class="metric-value" id="mScore">—</div>
               <div class="metric-label">Quality score</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="mRateLimit">—</div>
+              <div class="metric-label">Remaining / total</div>
             </div>
           </div>
         </div>
@@ -426,6 +433,6 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=2"></script>
 </body>
 </html>

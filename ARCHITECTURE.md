@@ -1,263 +1,88 @@
-# Architecture & Design Decisions
+# Architecture
 
-## Executive Summary
+## Overview
 
-This system is built as a **multi-stage compiler** that converts natural language into executable application config.
+This repository implements a compiler-like pipeline for turning a natural language prompt into a structured application configuration.
 
-Unlike end-to-end prompt chains, each stage is:
-- **Focused**: Does one thing well
-- **Testable**: Can validate output independently
-- **Repairable**: Errors in one layer don't break others
-- **Deterministic**: Same input produces consistent output
+The design goal is not just generation. It is controlled generation with validation, repair, observability, and rate limiting.
 
----
+## Runtime topology
 
-## Design Philosophy: Why Multi-Stage?
+- One FastAPI app serves the UI and the API.
+- The browser loads the frontend from `/`.
+- The frontend calls the API under `/api/v1` on the same origin.
+- Rate-limit state is stored in SQLite.
 
-### Anti-Pattern: End-to-End Prompt
+## Major components
 
-A single prompt requesting complete app configuration causes:
-- One LLM call failure results in total failure
-- Difficult to debug which component broke
-- Hallucination compounds across stages
-- Inconsistent behavior due to high temperature variance
-- Cannot validate intermediate outputs
-- Cannot repair specific layers independently
+### `app/main.py`
 
-### Better Pattern: Multi-Stage Pipeline
+- Creates the FastAPI app
+- Enables CORS for browser access
+- Mounts `frontend/` as static content
+- Exposes `/api/health`
 
-Process: Intent -> Design -> Schemas -> Validate -> Repair (if needed)
+### `app/routes/generate.py`
 
-Benefits:
-- Each stage is narrow, focused, and testable
-- Failures are isolated and easily debugged
-- Consistent outputs via temperature control per stage
-- Validation is deterministic, not LLM-based
-- Repair targets specific errors instead of blanket retry
-- Metrics track exactly where failures occur
+- Accepts prompt generation requests
+- Applies request rate limiting
+- Runs the orchestrator pipeline
+- Returns config and metrics
+- Exposes `GET /api/v1/rate-limit`
 
----
+### `app/utils/rate_limit.py`
 
-## Stage-by-Stage Design
+- Uses SQLite for persistence
+- Tracks request count by client identifier
+- Implements a daily window
+- Returns total, used, remaining, and reset time
 
-### Stage 1: Intent Extraction
+### `app/pipeline/`
 
-**Input**: Natural language prompt
-**Output**: Structured intent dict
+- `intent.py` - converts prompt into structured intent
+- `design.py` - creates the system design layer
+- `schema.py` - builds UI, API, DB, and auth schemas
+- `validator.py` - checks structure and consistency
+- `repair.py` - fixes validation issues
+- `orchestrator.py` - coordinates the stages
 
-**Why separate**?
-- Parsing is distinct from design
-- Focuses LLM on interpretation only
-- Output validated for completeness
-- Prevents downstream cascades
+### `frontend/`
 
-**What's extracted**:
-- `app_name`, `app_description` (naming)
-- `entities` (domain models)
-- `features` (use cases)
-- `roles` (access control)
-- `business_logic` (rules)
-- `assumptions` (clarifications made)
+- `index.html` - prompt editor and output panels
+- `style.css` - visual design and responsive layout
+- `script.js` - API calls, limit display, and results rendering
 
-**Key decision**: Extract assumptions explicitly so user knows what we assumed.
+## Pipeline flow
 
----
+1. The user submits a prompt.
+2. The frontend posts it to `POST /api/v1/generate`.
+3. The backend checks the daily rate limit.
+4. The orchestrator runs the generation stages.
+5. Validation runs.
+6. Repair runs if needed.
+7. The final config and metrics are returned to the UI.
 
-### Stage 2: System Design
+## Rate-limit model
 
-**Input**: Intent dict
-**Output**: Architectural design
+- Default limit: 5 requests per day.
+- The limit is client-based, using request identity from forwarded headers or the remote host.
+- When the limit is reached, the 6th request is rejected with HTTP 429.
+- The frontend shows the remaining count and a limit-exceeded message.
 
-**Why separate**?
-- Design is about structure, not syntax
-- Output isn't a final schema (easier to iterate)
-- Bridges intent to concrete implementation
+## Design choices
 
-**What's designed**:
-- Entity relationships (ERD)
-- User flows per feature
-- Page hierarchy
-- API patterns (RESTful resources)
-- Access rules (who can do what)
+- **Single origin**: avoids separate frontend deployment during local development.
+- **Stateful rate limiting**: SQLite keeps the daily quota across requests.
+- **No blind retry**: repair is targeted instead of regenerating the whole config.
+- **Mechanical validation**: validation is deterministic and reproducible.
 
-**Key decision**: Use LLM for architecture, not validation. Validation comes later mechanically.
+## Why this structure works
 
----
-
-### Stage 3: Schema Generation
-
-**Input**: Intent + Design
-**Output**: DB, UI, API schemas + Auth config
-
-**Why separate**?
-- Now we know what to generate (from design)
-- Three different output formats needed
-- Each schema has its own semantics
-
-**What's generated**:
-- DB schema: Entities with fields, types, relations
-- UI schema: Pages with components, routes, bindings
-- API schema: Endpoints with methods, auth, request/response
-- Auth config: Roles and their permissions
-
-**Key decision**: Use lower temperature (0.5) here for consistency. We know the structure, just filling in details.
-
----
-
-### Stage 4a: Validation (Mechanical)
-
-**Input**: All three schemas + auth config
-**Output**: (is_valid, list_of_errors)
-
-**Why separate from repair**?
-- Validation shouldn't try to fix (separate concerns)
-- Mechanical validation is deterministic (no LLM)
-- Errors are categorized for smart repair
-
-**What's validated**:
-1. **JSON Structure**: All dicts/lists are correct types
-2. **Required Fields**: No missing mandatory fields
-3. **Cross-Layer Consistency**:
-   - API endpoints reference valid entities
-   - UI pages reference valid roles
-   - Auth roles are consistent everywhere
-4. **Logic**: All entities have access paths
-
-**Key decision**: No LLM for validation. It's mechanical and must be reproducible.
-
----
-
-### Stage 4b: Intelligent Repair
-
-**Input**: Validation errors
-**Output**: Repaired schemas
-
-**Why intelligent?**
-- Error categories have specific fixes
-- Don't regenerate everything (expensive)
-- Fix only affected layers
-
-**Repair strategies**:
-
-1. **Missing Fields**
-   - Add field with sensible default
-   - Example: Missing "relations" - initialize to []
-
-2. **Invalid References**
-   - Remove dangling references
-   - Example: API endpoint references unknown entity - remove endpoint
-
-3. **Role Inconsistencies**
-   - Remove invalid role from access lists
-   - Example: Page allows unknown role - remove that role
-
-4. **Logic Gaps**
-   - Auto-generate missing components
-   - Example: Entity has no API endpoints - generate CRUD endpoints
-
-**Key decision**: Targeted repair > blind retry. Faster, cheaper, more reliable.
-
----
-
-## Validation & Repair Loop
-
-The system validates schemas and repairs errors through iteration:
-
-1. Generate Schemas (Intent converted to DB/UI/API schemas)
-2. Validate Schemas (mechanical checks for correctness)
-3. Is output valid?
-   - If YES: Return final configuration
-   - If NO: Repair schemas (add defaults, remove invalid refs, fix inconsistencies)
-4. Validate Again (up to 3 total attempts)
-5. Return final config or fail with clear errors
-
-**Why maximum 3 attempts?**
-- First try succeeds approximately 80% of the time
-- Repair fixes about 90% of failures
-- Three attempts rarely needed
-- Prevents infinite loops on fundamentally flawed inputs
-
-**When does the system fail?**
-- After 3 repair attempts with no success
-- Usually indicates the prompt is vague or internally contradictory
-- User should clarify requirements
-
----
-
-## Type Safety: Pydantic Models
-
-Every output is validated against strict Pydantic models:
-
-```python
-class Entity(BaseModel):
-    name: str          
-    fields: dict[str, Field]
-    
-class APIEndpoint(BaseModel):
-    path: str
-    method: HTTPMethod  
-    allowed_roles: list[AuthRole]  
-```
-
-**Benefits**:
-- Type checking at validation time
-- Clear error messages
-- Automatic serialization to JSON
-- Integration with FastAPI
-
----
-
-## Deterministic Behavior
-
-### Deterministic Behavior: Same Input Produces Consistent Output
-
-**Techniques used**:
-
-1. **Temperature Control**
-   - Design stage: 0.7 (some variance ok)
-   - Schema stage: 0.5 (consistency matters)
-   - Validation: 0.0 (no LLM)
-
-2. **Structured Prompts**
-   - Explicit schema descriptions
-   - Example JSON in prompts
-   - Field-by-field guidance
-
-3. **Validation Enforcement**
-   - Invalid outputs rejected
-   - Repair engine deterministic (no randomness)
-   - Only LLM variance is in generation
-
-**Measurement**:
-- Run same prompt 5 times
-- Compare outputs
-- Track consistency %
-
----
-
-## Cost vs Quality Tradeoffs
-
-### Latency: 15-30s per request
-
-**Breakdown**:
-- Intent extraction: 3-5s
-- Design: 3-5s  
-- Schema generation: 5-10s
-- Validation: <1s
-- Repair (if needed): 5-10s
-
-**Optimization opportunities**:
-- Cache common patterns
-- Use faster Groq model
-- Parallel stage execution (careful with deps)
-- Batch requests
-
-### Cost: $0.10-0.30 per request
-
-**Factors**:
-- ~2-4 LLM calls per request
-- ~2000-4000 tokens per call
-- Groq pricing varies by model; check the current Groq pricing page
+- Clear separation of concerns
+- Easy to test each stage independently
+- Easier to debug failures
+- Consistent local development flow
+- Better user feedback through the live rate-limit UI
 - Repair adds ~10-15% cost
 
 **Optimization**:
