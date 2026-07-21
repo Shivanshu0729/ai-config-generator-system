@@ -7,6 +7,35 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def repair_schema(schema: dict, errors: list[str], intent: dict = None) -> dict:
+    """Convenience function to repair a combined schema dictionary.
+    
+    Args:
+        schema: Dictionary containing db_schema, ui_schema, api_schema, and auth_config
+        errors: List of validation errors to repair
+        intent: Optional intent information for context
+        
+    Returns:
+        Dictionary with repaired schemas
+    """
+    engine = RepairEngine()
+    db_schema = schema.get("db_schema", {})
+    ui_schema = schema.get("ui_schema", {})
+    api_schema = schema.get("api_schema", {})
+    auth_config = schema.get("auth_config", {})
+    
+    db_schema, ui_schema, api_schema, auth_config = engine.repair(
+        errors, db_schema, ui_schema, api_schema, auth_config, intent
+    )
+    
+    return {
+        "db_schema": db_schema,
+        "ui_schema": ui_schema,
+        "api_schema": api_schema,
+        "auth_config": auth_config,
+    }
+
+
 class RepairEngine:
     """Intelligently repair validation errors."""
     

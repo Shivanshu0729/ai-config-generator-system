@@ -5,6 +5,23 @@ from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+def validate_schema(schema: dict) -> list[str]:
+    """Convenience function to validate a combined schema dictionary.
+    
+    Args:
+        schema: Dictionary containing db_schema, ui_schema, api_schema, and auth_config
+        
+    Returns:
+        List of validation errors (empty if valid)
+    """
+    validator = Validator()
+    db_schema = schema.get("db_schema", {})
+    ui_schema = schema.get("ui_schema", {})
+    api_schema = schema.get("api_schema", {})
+    auth_config = schema.get("auth_config", {})
+    
+    is_valid, errors = validator.validate(db_schema, ui_schema, api_schema, auth_config)
+    return errors
 
 class Validator:
     """Validate generated configuration."""

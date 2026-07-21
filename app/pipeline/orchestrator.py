@@ -12,6 +12,19 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def run_pipeline(user_prompt: str, max_repair_attempts: int = 3) -> dict:
+    """Convenience function to run the complete generation pipeline.
+    
+    Args:
+        user_prompt: Natural language description of the application
+        max_repair_attempts: Maximum attempts to fix validation errors
+        
+    Returns:
+        Dictionary with success status, config, and metrics
+    """
+    orchestrator = Orchestrator(max_repair_attempts)
+    return orchestrator.run(user_prompt)
+
 class Orchestrator:
     """Orchestrates the complete generation pipeline."""
     
