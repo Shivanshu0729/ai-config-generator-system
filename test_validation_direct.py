@@ -1,9 +1,6 @@
-"""Test validation directly without needing LLM API key."""
-
 from app.pipeline.validator import validate_schema
 import json
 
-# Sample schema for an e-commerce website
 ECOMMERCE_SCHEMA = {
     "db_schema": {
         "entities": {
@@ -44,7 +41,6 @@ ECOMMERCE_SCHEMA = {
     }
 }
 
-# Invalid schema example (missing required fields)
 INVALID_SCHEMA = {
     "db_schema": {
         "entities": {"users": {}}
@@ -72,9 +68,9 @@ def test_validation(name: str, schema: dict):
     errors = validate_schema(schema)
     
     if not errors:
-        print("✅ VALIDATION PASSED - No errors found!\n")
+        print("VALIDATION PASSED - No errors found!\n")
     else:
-        print(f"❌ VALIDATION FAILED - Found {len(errors)} errors:\n")
+        print(f"VALIDATION FAILED - Found {len(errors)} errors:\n")
         for i, error in enumerate(errors, 1):
             print(f"  {i}. {error}")
     
@@ -85,16 +81,14 @@ if __name__ == "__main__":
     print("VALIDATION TEST SUITE")
     print("="*80)
     
-    # Test valid schema
     valid = test_validation("Valid E-commerce Schema", ECOMMERCE_SCHEMA)
     
-    # Test invalid schema
     invalid = test_validation("Invalid Schema (Missing Fields)", INVALID_SCHEMA)
     
     # Summary
     print(f"\n\n{'='*80}")
     print("SUMMARY")
     print(f"{'='*80}")
-    print(f"Valid Schema Test: {'PASSED ✅' if valid else 'FAILED ❌'}")
-    print(f"Invalid Schema Test: {'PASSED ✅' if not invalid else 'FAILED ❌'} (should detect errors)")
+    print(f"Valid Schema Test: {'PASSED' if valid else 'FAILED'}")
+    print(f"Invalid Schema Test: {'PASSED' if not invalid else 'FAILED'} (should detect errors)")
     print(f"\nValidation is working correctly!" if (valid and not invalid) else "\nValidation needs attention!")
